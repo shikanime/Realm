@@ -1,17 +1,15 @@
-defmodule Realm.Setoid do
-  @type t :: any()
-
-  @doc """
-  The opposite of `equivalent?/2`.
-  ## Examples
-      iex> nonequivalent?(1, 2)
-      true
+defprotocol Realm.Setoid do
+  @moduledoc ~S"""
+  A setoid is a type with an equivalence relation.
+  This is most useful when equivalence of some data is not the same as equality.
+  Since some types have differing concepts of equality, this allows overriding
+  the behaviour from `Kernel.==/2`. To get the Setoid `==` operator override,
+  simply `use Realm.Setoid`.
+  ## Type Class
+  An instance of `Realm.Setoid` must define `Realm.Setoid.equivalent?/2`
+      Setoid [equivalent?/2]
   """
-  @spec nonequivalent?(Realm.Setoid.t(), Realm.Setoid.t()) :: boolean()
-  def nonequivalent?(a, b), do: not Realm.Setoid.Class.equivalent?(a, b)
-end
 
-defprotocol Realm.Setoid.Class do
   @doc ~S"""
   Compare two setoids and determine if they are equivalent.
   Aliased as `==`.
@@ -30,34 +28,34 @@ defprotocol Realm.Setoid.Class do
       chosen_one?(old_harry)
       #=> true
   """
-  @spec equivalent?(Realm.Setoid.t(), Realm.Setoid.t()) :: boolean()
+  @spec equivalent?(Setoid.t(), Setoid.t()) :: boolean()
   def equivalent?(a, b)
 end
 
-defimpl Realm.Setoid.Class, for: Integer do
+defimpl Realm.Setoid, for: Integer do
   def equivalent?(int, num), do: Kernel.==(int, num)
 end
 
-defimpl Realm.Setoid.Class, for: Float do
+defimpl Realm.Setoid, for: Float do
   def equivalent?(float, num), do: Kernel.==(float, num)
 end
 
-defimpl Realm.Setoid.Class, for: BitString do
-  def equivalent?(string_a, string_b), do: Kernel.==(string_a, string_b)
+defimpl Realm.Setoid, for: BitString do
+  def equivalent?(left, string_b), do: Kernel.==(left, string_b)
 end
 
-defimpl Realm.Setoid.Class, for: Tuple do
-  def equivalent?(tuple_a, tuple_b), do: Kernel.==(tuple_a, tuple_b)
+defimpl Realm.Setoid, for: Tuple do
+  def equivalent?(left, right), do: Kernel.==(left, right)
 end
 
-defimpl Realm.Setoid.Class, for: List do
-  def equivalent?(list_a, list_b), do: Kernel.==(list_a, list_b)
+defimpl Realm.Setoid, for: List do
+  def equivalent?(left, right), do: Kernel.==(left, right)
 end
 
-defimpl Realm.Setoid.Class, for: Map do
-  def equivalent?(map_a, map_b), do: Kernel.==(map_a, map_b)
+defimpl Realm.Setoid, for: Map do
+  def equivalent?(left, right), do: Kernel.==(left, right)
 end
 
-defimpl Realm.Setoid.Class, for: MapSet do
-  def equivalent?(a, b), do: MapSet.equal?(a, b)
+defimpl Realm.Setoid, for: MapSet do
+  def equivalent?(left, right), do: MapSet.equal?(left, right)
 end

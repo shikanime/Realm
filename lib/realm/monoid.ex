@@ -1,5 +1,29 @@
-defmodule Realm.Monoid do
-  @type t :: any()
+defprotocol Realm.Monoid do
+  @moduledoc ~S"""
+  Monoid extends the semigroup with the concept of an "empty" or "zero" element.
+  ## Type Class
+  An instance of `Realm.Monoid` must also implement `Realm.Semigroup`,
+  and define `Realm.Monoid.empty/1`.
+      Semigroup  [append/2]
+          ↓
+       Monoid    [empty/1]
+  """
+
+  @doc ~S"""
+  An "emptied out" or "starting position" of the passed data.
+  ## Example
+      iex> empty(10)
+      0
+      iex> empty [1, 2, 3, 4, 5]
+      []
+  """
+  def empty(monoid)
+end
+
+defmodule Realm.Monoid.Algebra do
+  alias Realm.{Monoid, Functor}
+
+  def zero(monoid), do: Monoid.empty(monoid)
 
   @doc """
   Check if a value is the empty element of that type.
@@ -9,42 +33,53 @@ defmodule Realm.Monoid do
       iex> empty?([1])
       false
   """
-  @spec empty?(Realm.Monoid.t()) :: boolean
-  def empty?(monoid), do: Realm.Monoid.Class.empty(monoid) == monoid
+  @spec empty?(Monoid.t()) :: boolean
+  def empty?(monoid), do: Monoid.empty(monoid) == monoid
+
+  @doc ~S"""
+  `map` with its arguments flipped.
+  ## Examples
+      iex> across(fn x -> x + 1 end, [1, 2, 3])
+      [2, 3, 4]
+      iex> fn
+      ...>   int when is_integer(int) -> int * 100
+      ...>   value -> inspect(value)
+      ...> end
+      ...> |> across(%{a: 2, b: [1, 2, 3]})
+      %{a: 200, b: "[1, 2, 3]"}
+  """
+  @spec across((any() -> any()), Functor.t()) :: Functor.t()
+  def across(fun, functor), do: Functor.map(functor, fun)
 end
 
-defprotocol Realm.Monoid.Class do
-  def empty(sample)
+defimpl Realm.Monoid, for: Function do
+  def empty(monoid) when is_function(monoid), do: &Quark.id/1
 end
 
-defimpl Realm.Monoid.Class, for: Function do
-  def empty(fun) when is_function(fun), do: &Quark.id/1
-end
-
-defimpl Realm.Monoid.Class, for: Integer do
+defimpl Realm.Monoid, for: Integer do
   def empty(_), do: 0
 end
 
-defimpl Realm.Monoid.Class, for: Float do
+defimpl Realm.Monoid, for: Float do
   def empty(_), do: 0.0
 end
 
-defimpl Realm.Monoid.Class, for: BitString do
+defimpl Realm.Monoid, for: BitString do
   def empty(_), do: ""
 end
 
-defimpl Realm.Monoid.Class, for: List do
+defimpl Realm.Monoid, for: List do
   def empty(_), do: []
 end
 
-defimpl Realm.Monoid.Class, for: Map do
+defimpl Realm.Monoid, for: Map do
   def empty(_), do: %{}
 end
 
-defimpl Realm.Monoid.Class, for: Tuple do
-  def empty(tuple), do: Realm.Functor.map(tuple, &Realm.Monoid.empty/1)
+defimpl Realm.Monoid, for: Tuple do
+  def empty(monoid), do: Realm.Functor.map(monoid, &Realm.Monoid.empty/1)
 end
 
-defimpl Realm.Monoid.Class, for: MapSet do
+defimpl Realm.Monoid, for: MapSet do
   def empty(_), do: MapSet.new()
 end

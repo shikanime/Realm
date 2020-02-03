@@ -1,42 +1,20 @@
-defmodule Realm.Ord do
-  @type t :: any()
+import Kernel, except: [<: 2, >: 2, <=: 2, >=: 2]
+
+defprotocol Realm.Ord do
+  @moduledoc ~S"""
+  `Ord` describes how to order elements of a data type.
+  This is a total order, so all elements are either `:equal`, `:greater`, or `:lesser`
+  than each other.
+  ## Type Class
+  An instance of `Realm.Ord` must also implement `Realm.Setoid`,
+  and define `Realm.Ord.compare/2`.
+      Setoid  [equivalent?/2]
+        ↓
+       Ord    [compare/2]
+  """
+
   @type ordering :: :lesser | :equal | :greater
 
-  @doc """
-  Determine if two elements are `:equal`.
-  ## Examples
-      iex> equal?(1, 1.0)
-      true
-      iex> equal?(1, 2)
-      false
-  """
-  @spec equal?(Ord.t(), Ord.t()) :: boolean()
-  def equal?(a, b), do: Realm.Ord.Class.compare(a, b) == :equal
-
-  @doc """
-  Determine if an element is `:greater` than another.
-  ## Examples
-      iex> greater?(1, 1)
-      false
-      iex> greater?(1.1, 1)
-      true
-  """
-  @spec greater?(Ord.t(), Ord.t()) :: boolean()
-  def greater?(a, b), do: Realm.Ord.Class.compare(a, b) == :greater
-
-  @doc """
-  Determine if an element is `:lesser` than another.
-  ## Examples
-      iex> lesser?(1, 1)
-      false
-      iex> lesser?(1, 1.1)
-      true
-  """
-  @spec lesser?(Ord.t(), Ord.t()) :: boolean()
-  def lesser?(a, b), do: Realm.Ord.Class.compare(a, b) == :lesser
-end
-
-defprotocol Realm.Ord.Class do
   @doc """
   Get the ordering relationship between two elements.
   Possible results are `:lesser`, `:equal`, and `:greater`
@@ -51,5 +29,20 @@ defprotocol Realm.Ord.Class do
       :greater
   """
   @spec compare(Ord.t(), Ord.t()) :: Ord.ordering()
-  def compare(ord_a, ord_b)
+  def compare(left, right)
+end
+
+defmodule Realm.Ord.Algebra do
+  alias Realm.Ord
+
+  @doc """
+  Determine if two elements are `:equal`.
+  ## Examples
+      iex> equal?(1, 1.0)
+      true
+      iex> equal?(1, 2)
+      false
+  """
+  @spec equal?(Ord.t(), Ord.t()) :: boolean()
+  def equal?(left, right), do: Ord.compare(left, right) == :equal
 end

@@ -1,20 +1,49 @@
-defmodule Realm.Arrow do
-  @type t :: fun()
+defprotocol Realm.Arrow do
+  @moduledoc """
+  Arrows abstract the idea of computations, potentially with a context.
+  Arrows are in fact an abstraction above monads, and can be used both to
+  express all other type classes in Realm. They also enable some nice
+  flow-based reasoning about computation.
+  For a nice illustrated explination,
+  see [Haskell/Understanding arrows](https://en.wikibooks.org/wiki/Haskell/Understanding_arrows)
+  Arrows let you think diagrammatically, and is a powerful way of thinking
+  about flow programming, concurrency, and more.
+                   ┌---> f --------------------------┐
+                   |                                 v
+      input ---> split                            unsplit ---> result
+                   |                                 ^
+                   |              ┌--- h ---┐        |
+                   |              |         v        |
+                   └---> g ---> split     unsplit ---┘
+                                  |         ^
+                                  └--- i ---┘
+  ## Type Class
+  An instance of `Realm.Arrow` must also implement `Realm.Category`,
+  and define `Realm.Arrow.arrowize/2`.
+      Semigroupoid  [compose/2, apply/2]
+          ↓
+       Category     [identity/1]
+          ↓
+        Arrow       [arrowize/2]
+  """
 
   @doc """
-  Take two arguments (as a 2-tuple), and run one function on the left side (first element),
-  and run a different function on the right side (second element).
-        ┌------> f.(a) = x -------┐
-        |                         v
-      {a, b}                    {x, y}
-        |                         ^
-        └------> g.(b) = y -------┘
+  Lift a function into an arrow, much like how `of/2` does with data.
+  Essentially a label for composing functions end-to-end, where instances
+  may have their own special idea of what composition means. The simplest example
+  is a regular function. Others are possible, such as Kleisli arrows.
   ## Examples
-      iex> product(&(&1 - 10), &(&1 <> "!")).({42, "Hi"})
-      {32, "Hi!"}
+      iex> use Realm.Arrow
+      ...> times_ten = arrowize(fn -> nil end, &(&1 * 10))
+      ...> 5 |> Semigroupoid.Algebra.pipe(times_ten)
+      50
   """
-  @spec product(Realm.Arrow.t(), Realm.Arrow.t()) :: Realm.Arrow.t()
-  def product(f, g), do: first(f) |> Semigroupoid.Class.compose(second(g))
+  @spec arrowize(Arrow.t(), fun()) :: Arrow.t()
+  def arrowize(sample, fun)
+end
+
+defmodule Realm.Arrow.Algebra do
+  alias Realm.{Arrow, Semigroupoid}
 
   @doc """
   Swap positions of elements in a tuple.
@@ -31,10 +60,10 @@ defmodule Realm.Arrow do
       iex> first(fn x -> x * 50 end).({1, 1})
       {50, 1}
   """
-  @spec first(Realm.Arrow.t()) :: Realm.Arrow.t()
+  @spec first(Arrow.t()) :: Arrow.t()
   def first(arrow) do
-    Realm.Arrow.Class.arrowize(arrow, fn {x, y} ->
-      {x |> Realm.Semigroupoid.pipe(arrow), y |> Realm.Semigroupoid.pipe(id_arrow(arrow))}
+    Arrow.arrowize(arrow, fn {x, y} ->
+      {x |> Semigroupoid.Algebra.pipe(arrow), y |> Semigroupoid.Algebra.pipe(id_arrow(arrow))}
     end)
   end
 
@@ -44,10 +73,10 @@ defmodule Realm.Arrow do
       iex> second(fn x -> x * 50 end).({1, 1})
       {1, 50}
   """
-  @spec second(Realm.Arrow.t()) :: Realm.Arrow.t()
+  @spec second(Arrow.t()) :: Arrow.t()
   def second(arrow) do
-    Realm.Arrow.Class.arrowize(arrow, fn {x, y} ->
-      {x |> Realm.Semigroupoid.pipe(id_arrow(arrow)), y |> Realm.Semigroupoid.pipe(arrow)}
+    Arrow.arrowize(arrow, fn {x, y} ->
+      {x |> Semigroupoid.Algebra.pipe(id_arrow(arrow)), y |> Semigroupoid.Algebra.pipe(arrow)}
     end)
   end
 
@@ -57,27 +86,8 @@ defmodule Realm.Arrow do
       iex> id_arrow(fn -> nil end).(99)
       99
   """
-  @spec id_arrow(Realm.Arrow.t()) :: (any() -> Realm.Arrow.t())
-  def id_arrow(arrow), do: Realm.Arrow.Class.arrowize(arrow, &Quark.id/1)
-
-  @doc """
-  Duplicate incoming data into both halves of a 2-tuple, and run one function
-  on the left copy, and a different function on the right copy.
-               ┌------> f.(a) = x ------┐
-               |                        v
-      a ---> split = {a, a}           {x, y}
-               |                        ^
-               └------> g.(a) = y ------┘
-  ## Examples
-      iex> Realm.Semigroupoid.Realm.Semigroupoid.pipe(42, fanout(&(&1 - 10), &(inspect(&1) <> "!")))
-      {32, "42!"}
-  """
-  @spec fanout(Realm.Arrow.t(), Realm.Arrow.t()) :: Realm.Arrow.t()
-  def fanout(f, g) do
-    f
-    |> Realm.Arrow.Class.arrowize(&split/1)
-    |> Realm.Semigroupoid.Class.compose(Realm.Arrow.product(f, g))
-  end
+  @spec id_arrow(Arrow.t()) :: (any() -> Arrow.t())
+  def id_arrow(sample), do: Arrow.arrowize(sample, &Quark.id/1)
 
   @doc """
   Copy a single value into both positions of a 2-tuple.
@@ -95,9 +105,9 @@ defmodule Realm.Arrow do
       iex> use Realm.Arrow
       ...> 5
       ...> |> split()
-      ...> |> Realm.Semigroupoid.pipe(second(fn x -> x - 2 end))
-      ...> |> Realm.Semigroupoid.pipe(first(fn y -> y * 10 end))
-      ...> |> Realm.Semigroupoid.pipe(second(&inspect/1))
+      ...> |> pipe(second(fn x -> x - 2 end))
+      ...> |> pipe(first(fn y -> y * 10 end))
+      ...> |> pipe(second(&inspect/1))
       {50, "3"}
   """
   @spec split(any()) :: {any(), any()}
@@ -110,7 +120,7 @@ defmodule Realm.Arrow do
       3
   """
   @spec unsplit({any(), any()}, (any(), any() -> any())) :: any()
-  def unsplit({x, y}, combine), do: combine.(x, y)
+  def unsplit({x, y}, fun), do: fun.(x, y)
 
   @doc """
   Switch the associativity of a nested tuple. Helpful since many arrows act
@@ -131,47 +141,29 @@ defmodule Realm.Arrow do
   ## Examples
       iex> f = precompose(
       ...>   fn x -> x + 1 end,
-      ...>   Realm.Arrow.Class.arrowize(fn _ -> nil end, fn y -> y * 10 end)
+      ...>   Arrow.arrowize(fn _ -> nil end, fn y -> y * 10 end)
       ...> )
       ...> f.(42)
       430
   """
-  @spec precompose(fun(), Realm.Arrow.t()) :: Realm.Arrow.t()
-  def precompose(fun, arrow),
-    do: Realm.Arrow.Class.arrowize(arrow, fun) |> Realm.Semigroupoid.Class.compose(arrow)
+  @spec precompose(fun(), Arrow.t()) :: Arrow.t()
+  def precompose(fun, arrow), do: Semigroupoid.compose(Arrow.arrowize(arrow, fun), arrow)
 
   @doc """
   Compose an arrow (left) with a function (right) to produce a new arrow.
   ## Examples
       iex> f = postcompose(
-      ...>   Realm.Arrow.Class.arrowize(fn _ -> nil end, fn x -> x + 1 end),
+      ...>   Arrow.arrowize(fn _ -> nil end, fn x -> x + 1 end),
       ...>   fn y -> y * 10 end
       ...> )
       ...> f.(42)
       430
   """
-  @spec precompose(Realm.Arrow.t(), fun()) :: Realm.Arrow.t()
-  def postcompose(arrow, fun),
-    do: arrow |> Realm.Semigroupoid.Class.compose(Realm.Arrow.Class.arrowize(arrow, fun))
+  @spec postcompose(Arrow.t(), fun()) :: Arrow.t()
+  def postcompose(arrow, fun), do: Semigroupoid.compose(arrow, Arrow.arrowize(arrow, fun))
 end
 
-defprotocol Realm.Realm.Arrow.Class do
-  @doc """
-  Lift a function into an arrow, much like how `of/2` does with data.
-  Essentially a label for composing functions end-to-end, where instances
-  may have their own special idea of what composition means. The simplest example
-  is a regular function. Others are possible, such as Kleisli arrows.
-  ## Examples
-      iex> use Realm.Arrow
-      ...> times_ten = Realm.Arrow.Class.arrowize(fn -> nil end, &(&1 * 10))
-      ...> 5 |> Realm.Semigroupoid.pipe(times_ten)
-      50
-  """
-  @spec arrowize(Realm.Arrow.t(), fun()) :: Realm.Arrow.t()
-  def arrowize(arrow, fun)
-end
-
-defimpl Realm.Realm.Arrow.Class, for: Function do
+defimpl Realm.Arrow, for: Function do
   use Quark
 
   def arrowize(_, fun), do: curry(fun)
