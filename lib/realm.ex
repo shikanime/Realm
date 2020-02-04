@@ -1,10 +1,10 @@
 import Kernel, except: [==: 2, !=: 2, >: 2, <: 2, <=: 2, >=: 2, <>: 2, apply: 2]
+import Realm.Arrow.Algebra
+import Realm.Apply.Algebra
 
 defmodule Realm do
   alias Realm.{Semigroupoid, Semigroup, Arrow, Apply, Ord, Setoid, Functor}
   import Quark.Curry
-  import Arrow.Algebra
-  import Apply.Algebra
 
   @doc false
   defmacro __using__(options) do

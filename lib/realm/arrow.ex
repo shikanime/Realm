@@ -1,3 +1,5 @@
+import Realm.Semigroupoid.Algebra
+
 defprotocol Realm.Arrow do
   @moduledoc """
   Arrows abstract the idea of computations, potentially with a context.
@@ -44,7 +46,6 @@ end
 
 defmodule Realm.Arrow.Algebra do
   alias Realm.{Arrow, Semigroupoid}
-  import Semigroupoid.Algebra
 
   @doc """
   Swap positions of elements in a tuple.
@@ -107,7 +108,7 @@ defmodule Realm.Arrow.Algebra do
       ...> <~> second(&inspect/1)).()
       {50, "3"}
       iex> import Realm.Arrow.Algebra
-      ...> import Realm.Realm.Semigroupoid.Algebra
+      ...> import Realm.Semigroupoid.Algebra
       ...> 5
       ...> |> split()
       ...> |> pipe(second(fn x -> x - 2 end))
