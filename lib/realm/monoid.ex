@@ -12,9 +12,9 @@ defprotocol Realm.Monoid do
   @doc ~S"""
   An "emptied out" or "starting position" of the passed data.
   ## Example
-      iex> empty(10)
+      iex> Realm.Monoid.empty(10)
       0
-      iex> empty [1, 2, 3, 4, 5]
+      iex> Realm.Monoid.empty [1, 2, 3, 4, 5]
       []
   """
   def empty(monoid)
@@ -28,9 +28,11 @@ defmodule Realm.Monoid.Algebra do
   @doc """
   Check if a value is the empty element of that type.
   ## Examples
-      iex> empty?([])
+      iex> import Realm.Monoid.Algebra
+      ...> empty?([])
       true
-      iex> empty?([1])
+      iex> import Realm.Monoid.Algebra
+      ...> empty?([1])
       false
   """
   @spec empty?(Monoid.t()) :: boolean
@@ -39,13 +41,15 @@ defmodule Realm.Monoid.Algebra do
   @doc ~S"""
   `map` with its arguments flipped.
   ## Examples
-      iex> across(fn x -> x + 1 end, [1, 2, 3])
+      iex> import Realm.Monoid.Algebra
+      ...> across(fn x -> x + 1 end, [1, 2, 3])
       [2, 3, 4]
-      iex> fn
+      iex> import Realm.Monoid.Algebra
+      ...> fn
       ...>   int when is_integer(int) -> int * 100
       ...>   value -> inspect(value)
       ...> end
-      ...> |> across(%{a: 2, b: [1, 2, 3]})
+      ...> |> .across(%{a: 2, b: [1, 2, 3]})
       %{a: 200, b: "[1, 2, 3]"}
   """
   @spec across((any() -> any()), Functor.t()) :: Functor.t()

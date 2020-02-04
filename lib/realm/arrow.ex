@@ -35,7 +35,7 @@ defprotocol Realm.Arrow do
   ## Examples
       iex> use Realm.Arrow
       ...> times_ten = arrowize(fn -> nil end, &(&1 * 10))
-      ...> 5 |> Semigroupoid.Algebra.pipe(times_ten)
+      ...> 5 |> Realm.Semigroupoid.Algebra.pipe(times_ten)
       50
   """
   @spec arrowize(Arrow.t(), fun()) :: Arrow.t()
@@ -57,7 +57,8 @@ defmodule Realm.Arrow.Algebra do
   @doc """
   Target the first element of a tuple.
   ## Examples
-      iex> first(fn x -> x * 50 end).({1, 1})
+      iex> import Realm.Arrow.Algebra
+      ...> first(fn x -> x * 50 end).({1, 1})
       {50, 1}
   """
   @spec first(Arrow.t()) :: Arrow.t()
@@ -70,7 +71,8 @@ defmodule Realm.Arrow.Algebra do
   @doc """
   Target the second element of a tuple.
   ## Examples
-      iex> second(fn x -> x * 50 end).({1, 1})
+      iex> import Realm.Arrow.Algebra
+      ...> second(fn x -> x * 50 end).({1, 1})
       {1, 50}
   """
   @spec second(Arrow.t()) :: Arrow.t()
@@ -93,16 +95,18 @@ defmodule Realm.Arrow.Algebra do
   Copy a single value into both positions of a 2-tuple.
   This is useful is you want to run functions on the input separately.
   ## Examples
-      iex> split(42)
+      iex> import Realm.Arrow.Algebra
+      ...> split(42)
       {42, 42}
-      iex> import Realm.Semigroupoid, only: [<~>: 2]
+      iex> import Realm.Arrow.Algebra
       ...> 5
       ...> |> split()
       ...> |> (second(fn x -> x - 2 end)
-      ...> <~> first(fn y -> y * 10 end)
+      ...> <~> Arrow.Algebra.first(fn y -> y * 10 end)
       ...> <~> second(&inspect/1)).()
       {50, "3"}
-      iex> use Realm.Arrow
+      iex> import Realm.Arrow.Algebra
+      ...> import Realm.Realm.Semigroupoid.Algebra
       ...> 5
       ...> |> split()
       ...> |> pipe(second(fn x -> x - 2 end))
@@ -116,7 +120,8 @@ defmodule Realm.Arrow.Algebra do
   @doc """
   Merge two tuple values with a combining function.
   ## Examples
-      iex> unsplit({1, 2}, &+/2)
+      iex> import Realm.Apply.Algebra
+      ...> unsplit({1, 2}, &+/2)
       3
   """
   @spec unsplit({any(), any()}, (any(), any() -> any())) :: any()
@@ -126,9 +131,11 @@ defmodule Realm.Arrow.Algebra do
   Switch the associativity of a nested tuple. Helpful since many arrows act
   on a subset of a tuple, and you may want to move portions in and out of that stream.
   ## Examples
-      iex> reassociate({1, {2, 3}})
+      iex> import Realm.Apply.Algebra
+      ...> reassociate({1, {2, 3}})
       {{1, 2}, 3}
-      iex> reassociate({{1, 2}, 3})
+      iex> import Realm.Apply.Algebra
+      ...> reassociate({{1, 2}, 3})
       {1, {2, 3}}
   """
   @spec reassociate({any(), {any(), any()}} | {{any(), any()}, any()}) ::
@@ -139,7 +146,8 @@ defmodule Realm.Arrow.Algebra do
   @doc """
   Compose a function (left) with an arrow (right) to produce a new arrow.
   ## Examples
-      iex> f = precompose(
+      iex> import Realm.Apply.Algebra
+      ...> f = precompose(
       ...>   fn x -> x + 1 end,
       ...>   Arrow.arrowize(fn _ -> nil end, fn y -> y * 10 end)
       ...> )
@@ -152,7 +160,8 @@ defmodule Realm.Arrow.Algebra do
   @doc """
   Compose an arrow (left) with a function (right) to produce a new arrow.
   ## Examples
-      iex> f = postcompose(
+      iex> import Realm.Apply.Algebra
+      ...> f = postcompose(
       ...>   Arrow.arrowize(fn _ -> nil end, fn x -> x + 1 end),
       ...>   fn y -> y * 10 end
       ...> )

@@ -39,7 +39,8 @@ defmodule Realm.Semigroupoid.Algebra do
   Similar to `apply/2`, but with a single argument, not needing to wrap
   the argument in a list.
   ## Examples
-      iex> pipe(42, &(&1 + 1))
+      iex> import Realm.Semigroupoid.Algebra
+      ...> pipe(42, &(&1 + 1))
       43
   """
   @spec pipe(any(), Semigroupoid.t()) :: any()
@@ -48,7 +49,8 @@ defmodule Realm.Semigroupoid.Algebra do
   @doc """
   `compose/2`, but with the arguments flipped (same direction as `|>`).
   ## Examples
-      iex> times_ten_plus_one = compose(fn y -> y * 10 end, fn x -> x + 1 end)
+      iex> import Realm.Semigroupoid.Algebra
+      ...> times_ten_plus_one = compose(fn y -> y * 10 end, fn x -> x + 1 end)
       ...> times_ten_plus_one.(5)
       51
   """

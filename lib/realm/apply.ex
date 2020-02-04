@@ -68,7 +68,7 @@ defprotocol Realm.Apply do
   and `ap` runs all functions for each element (`first_arg ⬸ all_funs`).
   This may change the order of results, and is a feature, not a bug.
       iex> [1, 2, 3]
-      ...> |> Apply.convey([&(&1 + 1), &(&1 * 10)])
+      ...> |> Realm.Apply.convey([&(&1 + 1), &(&1 * 10)])
       [
         2, 10, # [(1 + 1), (1 * 10)]
         3, 20, # [(2 + 1), (2 * 10)]
@@ -101,7 +101,6 @@ defprotocol Realm.Apply do
 end
 
 defmodule Realm.Apply.Algebra do
-  use Quark
   alias Realm.{Apply, Functor}
 
   @doc """
@@ -128,7 +127,8 @@ defmodule Realm.Apply.Algebra do
   run on all right-side arguments, in that order. We're altering the _sequencing_
   of function applications.
   ## Examples
-      iex> ap([fn x -> x + 1 end, fn y -> y * 10 end], [1, 2, 3])
+      iex> import Realm.Apply.Algebra
+      ...> ap([fn x -> x + 1 end, fn y -> y * 10 end], [1, 2, 3])
       [2, 3, 4, 10, 20, 30]
       # For comparison
       iex> Apply.convey([1, 2, 3], [fn x -> x + 1 end, fn y -> y * 10 end])
@@ -150,7 +150,8 @@ defmodule Realm.Apply.Algebra do
   Sequence actions, replacing the first/previous values with the last argument
   This is essentially a sequence of actions forgetting the first argument
   ## Examples
-      iex> [1, 2, 3]
+      iex> import Realm.Apply.Algebra
+      ...> [1, 2, 3]
       ...> |> then([4, 5, 6])
       ...> |> then([7, 8, 9])
       [
@@ -164,7 +165,8 @@ defmodule Realm.Apply.Algebra do
         7, 8, 9,
         7, 8, 9
       ]
-      iex> {1, 2, 3} |> then({4, 5, 6}) |> then({7, 8, 9})
+      iex> import Realm.Apply.Algebra
+      ...> {1, 2, 3} |> then({4, 5, 6}) |> then({7, 8, 9})
       {12, 15, 9}
   """
   @spec then(Apply.t(), Apply.t()) :: Apply.t()
@@ -174,7 +176,8 @@ defmodule Realm.Apply.Algebra do
   Sequence actions, replacing the last argument with the first argument's values
   This is essentially a sequence of actions forgetting the second argument
   ## Examples
-      iex> [1, 2, 3]
+      iex> import Realm.Apply.Algebra
+      ...> [1, 2, 3]
       ...> |> following([3, 4, 5])
       ...> |> following([5, 6, 7])
       [
@@ -182,7 +185,8 @@ defmodule Realm.Apply.Algebra do
         2, 2, 2, 2, 2, 2, 2, 2, 2,
         3, 3, 3, 3, 3, 3, 3, 3, 3
       ]
-      iex> {1, 2, 3} |> following({4, 5, 6}) |> following({7, 8, 9})
+      iex> import Realm.Apply.Algebra
+      ...> {1, 2, 3} |> following({4, 5, 6}) |> following({7, 8, 9})
       {12, 15, 3}
   """
   @spec following(Apply.t(), Apply.t()) :: Apply.t()
@@ -191,23 +195,26 @@ defmodule Realm.Apply.Algebra do
   @doc """
   Extends `Functor.map/2` to apply arguments to a binary function
   ## Examples
-      iex> lift([1, 2], [3, 4], &+/2)
+      iex> import Realm.Apply.Algebra
+      ...> lift([1, 2], [3, 4], &+/2)
       [4, 5, 5, 6]
-      iex> [1, 2]
+      iex> import Realm.Apply.Algebra
+      ...> [1, 2]
       ...> |> lift([3, 4], &*/2)
       [3, 6, 4, 8]
   """
   @spec lift(Apply.t(), Apply.t(), fun()) :: Apply.t()
   def lift(a, b, fun) do
     a
-    |> Functor.map(curry(fun))
+    |> Functor.map(Quark.Curry.curry(fun))
     |> (fn f -> Apply.convey(b, f) end).()
   end
 
   @doc """
   Extends `lift` to apply arguments to a ternary function
   ## Examples
-      iex> lift([1, 2], [3, 4], [5, 6], fn(a, b, c) -> a * b - c end)
+      iex> import Realm.Apply.Algebra
+      ...> lift([1, 2], [3, 4], [5, 6], fn(a, b, c) -> a * b - c end)
       [-2, -3, 1, 0, -1, -2, 3, 2]
   """
   @spec lift(Apply.t(), Apply.t(), Apply.t(), fun()) :: Apply.t()
@@ -216,7 +223,8 @@ defmodule Realm.Apply.Algebra do
   @doc """
   Extends `lift` to apply arguments to a quaternary function
   ## Examples
-      iex> lift([1, 2], [3, 4], [5, 6], [7, 8], fn(a, b, c, d) -> a * b - c + d end)
+      iex> import Realm.Apply.Algebra
+      ...> lift([1, 2], [3, 4], [5, 6], [7, 8], fn(a, b, c, d) -> a * b - c + d end)
       [5, 6, 4, 5, 8, 9, 7, 8, 6, 7, 5, 6, 10, 11, 9, 10]
   """
   @spec lift(Apply.t(), Apply.t(), Apply.t(), Apply.t(), fun()) :: Apply.t()
@@ -232,13 +240,14 @@ defmodule Realm.Apply.Algebra do
       [3, 4, 6, 8]
   """
   @spec over(fun(), Apply.t(), Apply.t()) :: Apply.t()
-  def over(fun, a, b), do: a |> Functor.map(curry(fun)) |> ap(b)
+  def over(fun, a, b), do: a |> Functor.map(Quark.Curry.curry(fun)) |> ap(b)
 
   @doc """
   Extends `over` to apply arguments to a ternary function
   ## Examples
-      iex> fn(a, b, c) -> a * b - c end
-      iex> |> over([1, 2], [3, 4], [5, 6])
+      iex> import Realm.Apply.Algebra
+      ...> fn(a, b, c) -> a * b - c end
+      ...> |> over([1, 2], [3, 4], [5, 6])
       [-2, -3, -1, -2, 1, 0, 3, 2]
   """
   @spec over(fun(), Apply.t(), Apply.t(), Apply.t()) :: Apply.t()
@@ -247,7 +256,8 @@ defmodule Realm.Apply.Algebra do
   @doc """
   Extends `over` to apply arguments to a ternary function
   ## Examples
-      iex> fn(a, b, c) -> a * b - c end
+      iex> import Realm.Apply.Algebra
+      ...> fn(a, b, c) -> a * b - c end
       ...> |> over([1, 2], [3, 4], [5, 6])
       [-2, -3, -1, -2, 1, 0, 3, 2]
   """

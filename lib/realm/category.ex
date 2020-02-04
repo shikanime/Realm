@@ -16,7 +16,7 @@ defprotocol Realm.Category do
   @doc """
   Take some value and return it again.
   ## Examples
-      iex> classic_id = identity(fn -> nil end)
+      iex> classic_id = Realm.Category.identity(fn -> nil end)
       ...> classic_id.(42)
       42
   """

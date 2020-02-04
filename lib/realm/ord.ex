@@ -19,13 +19,13 @@ defprotocol Realm.Ord do
   Get the ordering relationship between two elements.
   Possible results are `:lesser`, `:equal`, and `:greater`
   ## Examples
-      iex> compare(1, 1)
+      iex> Realm.Ord.compare(1, 1)
       :equal
-      iex> compare([1], [2])
+      iex> Realm.Ord.compare([1], [2])
       :lesser
-      iex> compare([1, 2], [3])
+      iex> Realm.Ord.compare([1, 2], [3])
       :lesser
-      iex> compare([3, 2, 1], [1, 2, 3, 4, 5])
+      iex> Realm.Ord.compare([3, 2, 1], [1, 2, 3, 4, 5])
       :greater
   """
   @spec compare(Ord.t(), Ord.t()) :: Ord.ordering()
@@ -38,9 +38,11 @@ defmodule Realm.Ord.Algebra do
   @doc """
   Determine if two elements are `:equal`.
   ## Examples
-      iex> equal?(1, 1.0)
+      iex> import Realm.Monoid.Algebra
+      ...> equal?(1, 1.0)
       true
-      iex> equal?(1, 2)
+      iex> import Realm.Monoid.Algebra
+      ...> equal?(1, 2)
       false
   """
   @spec equal?(Ord.t(), Ord.t()) :: boolean()

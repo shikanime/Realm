@@ -33,7 +33,8 @@ defmodule Realm.Semigroup.Algebra do
   @doc ~S"""
   Flatten a list of homogeneous semigroups to a single container.
   ## Example
-      iex> concat [
+      iex> import Realm.Semigroup.Algebra
+      ...> concat [
       ...>   [1, 2, 3],
       ...>   [4, 5, 6]
       ...> ]
@@ -47,7 +48,8 @@ defmodule Realm.Semigroup.Algebra do
   @doc ~S"""
   Repeat the contents of a semigroup a certain number of times.
   ## Examples
-      iex> [1, 2, 3] |> repeat(3)
+      iex> import Realm.Semigroup.Algebra
+      ...> [1, 2, 3] |> repeat(3)
       [1, 2, 3, 1, 2, 3, 1, 2, 3]
   """
   @spec repeat(Semigroup.t(), non_neg_integer()) :: Semigroup.t()

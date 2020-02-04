@@ -15,11 +15,11 @@ defprotocol Realm.Functor do
   `map` a function into one layer of a data wrapper.
   There is an autocurrying variant: `lift/2`.
   ## Examples
-      iex> map([1, 2, 3], fn x -> x + 1 end)
+      iex> Realm.Functor.map([1, 2, 3], fn x -> x + 1 end)
       [2, 3, 4]
       iex> %{a: 1, b: 2} ~> fn x -> x * 10 end
       %{a: 10, b: 20}
-      iex> map(%{a: 2, b: [1, 2, 3]}, fn
+      iex> Realm.Functor.map(%{a: 2, b: [1, 2, 3]}, fn
       ...>   int when is_integer(int) -> int * 100
       ...>   value -> inspect(value)
       ...> end)
@@ -36,7 +36,8 @@ defmodule Realm.Functor.Algebra do
   @doc ~S"""
   Replace all inner elements with a constant value
   ## Examples
-      iex> replace([1, 2, 3], "hi")
+      iex> import Realm.Functor.Algebra
+      ...> replace([1, 2, 3], "hi")
       ["hi", "hi", "hi"]
   """
   @spec replace(Functor.t(), any()) :: Functor.t()
