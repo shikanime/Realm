@@ -8,51 +8,57 @@ defmodule Realm do
 
   @doc false
   defmacro __using__(options) do
-    except =
-      cond do
-        Keyword.get(options, :only_operators) ->
-          [
-            compose: 2,
-            flow_compose: 2,
-            product: 2,
-            fanout: 2,
-            lesser?: 2,
-            greater?: 2,
-            at_most?: 2,
-            at_least?: 2,
-            equal?: 2,
-            nonequivalent?: 2,
-            lift: 2,
-            over: 2,
-            provide: 2,
-            supply: 2
-          ]
+    overrides = [<>: 2, <: 2, >: 2, <=: 2, >=: 2, ==: 2, !=: 2]
 
+    ops = [
+      <>: 2,
+      <: 2,
+      >: 2,
+      <=: 2,
+      >=: 2,
+      ==: 2,
+      !=: 2,
+      <|>: 2,
+      <~>: 2,
+      ^^^: 2,
+      &&&: 2,
+      ~>: 2,
+      <~: 2,
+      <<~: 2,
+      ~>>: 2
+    ]
+
+    funs = [
+      compose: 2,
+      flow_compose: 2,
+      product: 2,
+      fanout: 2,
+      lesser?: 2,
+      greater?: 2,
+      at_most?: 2,
+      at_least?: 2,
+      equal?: 2,
+      nonequivalent?: 2,
+      lift: 2,
+      over: 2,
+      provide: 2,
+      supply: 2
+    ]
+
+    {except, kernel} =
+      cond do
         Keyword.get(options, :skip_operators) ->
-          [
-            <|>: 2,
-            <~>: 2,
-            <>: 2,
-            ^^^: 2,
-            &&&: 2,
-            <: 2,
-            >: 2,
-            <=: 2,
-            >=: 2,
-            ==: 2,
-            !=: 2,
-            ~>: 2,
-            <~: 2,
-            <<~: 2,
-            ~>>: 2
-          ]
+          {ops, []}
+
+        Keyword.get(options, :only_operators) ->
+          {funs, overrides}
 
         :else ->
-          []
+          {[], overrides}
       end
 
     quote do
-      import Kernel, except: [<>: 2, <: 2, >: 2, <=: 2, >=: 2, ==: 2, !=: 2]
+      import Kernel, except: unquote(kernel)
       import Realm, except: unquote(except)
     end
   end
