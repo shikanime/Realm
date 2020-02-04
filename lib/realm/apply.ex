@@ -102,6 +102,7 @@ end
 
 defmodule Realm.Apply.Algebra do
   alias Realm.{Apply, Functor}
+  import Quark.Curry
 
   @doc """
   Alias for `convey/2`.
@@ -206,7 +207,7 @@ defmodule Realm.Apply.Algebra do
   @spec lift(Apply.t(), Apply.t(), fun()) :: Apply.t()
   def lift(a, b, fun) do
     a
-    |> Functor.map(Quark.Curry.curry(fun))
+    |> Functor.map(curry(fun))
     |> (fn f -> Apply.convey(b, f) end).()
   end
 
@@ -240,7 +241,7 @@ defmodule Realm.Apply.Algebra do
       [3, 4, 6, 8]
   """
   @spec over(fun(), Apply.t(), Apply.t()) :: Apply.t()
-  def over(fun, a, b), do: a |> Functor.map(Quark.Curry.curry(fun)) |> ap(b)
+  def over(fun, a, b), do: a |> Functor.map(curry(fun)) |> ap(b)
 
   @doc """
   Extends `over` to apply arguments to a ternary function

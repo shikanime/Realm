@@ -2,6 +2,9 @@ import Kernel, except: [==: 2, !=: 2, >: 2, <: 2, <=: 2, >=: 2, <>: 2, apply: 2]
 
 defmodule Realm do
   alias Realm.{Semigroupoid, Semigroup, Arrow, Apply, Ord, Setoid, Functor}
+  import Quark.Curry
+  import Arrow.Algebra
+  import Apply.Algebra
 
   @doc false
   defmacro __using__(options) do
@@ -156,7 +159,7 @@ defmodule Realm do
       {32, "Hi!"}
   """
   @spec product(Arrow.t(), Arrow.t()) :: Arrow.t()
-  def product(f, g), do: Arrow.Algebra.first(f) <~> Arrow.Algebra.second(g)
+  def product(f, g), do: first(f) <~> second(g)
 
   @doc """
   Take two arguments (as a 2-tuple), and run one function on the left side (first element),
@@ -198,7 +201,7 @@ defmodule Realm do
       {{{{32, "42!"}, "42?"}, "4242"}, 21.0}
   """
   @spec fanout(Arrow.t(), Arrow.t()) :: Arrow.t()
-  def fanout(f, g), do: f |> Arrow.arrowize(&Arrow.Algebra.split/1) <~> (f ^^^ g)
+  def fanout(f, g), do: f |> Arrow.arrowize(&split/1) <~> (f ^^^ g)
 
   @doc """
   Duplicate incoming data into both halves of a 2-tuple, and run one function
@@ -387,7 +390,7 @@ defmodule Realm do
       10
   """
   @spec lift(Functor.t(), fun()) :: Functor.t()
-  def lift(functor, fun), do: Functor.map(functor, Quark.Curry.curry(fun))
+  def lift(functor, fun), do: Functor.map(functor, curry(fun))
 
   @doc ~S"""
   `map/2` but with the function automatically curried
@@ -462,8 +465,7 @@ defmodule Realm do
       [5, 6, 4, 5, 6, 7, 5, 6, 8, 9, 7, 8, 10, 11, 9, 10]
   """
   @spec provide(Apply.t(), Apply.t()) :: Apply.t()
-  def provide(funs, apply),
-    do: funs |> Functor.map(&Quark.Curry.curry/1) |> Apply.Algebra.ap(apply)
+  def provide(funs, apply), do: funs |> Functor.map(&curry/1) |> ap(apply)
 
   @doc """
   Same as `ap/2`, but with all functions curried.
@@ -499,7 +501,7 @@ defmodule Realm do
       [5.0, 10.0, 2.0, 4.0, 10.0, 20.0, 4.0, 8.0]
   """
   @spec supply(Apply.t(), Apply.t()) :: Apply.t()
-  def supply(apply, funs), do: Apply.convey(apply, Functor.map(funs, &Quark.Curry.curry/1))
+  def supply(apply, funs), do: Apply.convey(apply, Functor.map(funs, &curry/1))
 
   @doc """
   Same as `convey/2`, but with all functions curried.

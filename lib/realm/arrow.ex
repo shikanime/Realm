@@ -35,7 +35,7 @@ defprotocol Realm.Arrow do
   ## Examples
       iex> use Realm.Arrow
       ...> times_ten = arrowize(fn -> nil end, &(&1 * 10))
-      ...> 5 |> Realm.Semigroupoid.Algebra.pipe(times_ten)
+      ...> 5 |> Realm.pipe(times_ten)
       50
   """
   @spec arrowize(Arrow.t(), fun()) :: Arrow.t()
@@ -44,6 +44,7 @@ end
 
 defmodule Realm.Arrow.Algebra do
   alias Realm.{Arrow, Semigroupoid}
+  import Semigroupoid.Algebra
 
   @doc """
   Swap positions of elements in a tuple.
@@ -64,7 +65,7 @@ defmodule Realm.Arrow.Algebra do
   @spec first(Arrow.t()) :: Arrow.t()
   def first(arrow) do
     Arrow.arrowize(arrow, fn {x, y} ->
-      {x |> Semigroupoid.Algebra.pipe(arrow), y |> Semigroupoid.Algebra.pipe(id_arrow(arrow))}
+      {x |> pipe(arrow), y |> pipe(id_arrow(arrow))}
     end)
   end
 
@@ -78,7 +79,7 @@ defmodule Realm.Arrow.Algebra do
   @spec second(Arrow.t()) :: Arrow.t()
   def second(arrow) do
     Arrow.arrowize(arrow, fn {x, y} ->
-      {x |> Semigroupoid.Algebra.pipe(id_arrow(arrow)), y |> Semigroupoid.Algebra.pipe(arrow)}
+      {x |> pipe(id_arrow(arrow)), y |> pipe(arrow)}
     end)
   end
 
@@ -102,7 +103,7 @@ defmodule Realm.Arrow.Algebra do
       ...> 5
       ...> |> split()
       ...> |> (second(fn x -> x - 2 end)
-      ...> <~> Arrow.Algebra.first(fn y -> y * 10 end)
+      ...> <~> first(fn y -> y * 10 end)
       ...> <~> second(&inspect/1)).()
       {50, "3"}
       iex> import Realm.Arrow.Algebra
