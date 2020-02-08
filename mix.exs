@@ -7,7 +7,8 @@ defmodule Realm.MixProject do
       version: "0.1.0",
       name: "Realm",
       description: description(),
-      source_url: "https://github.com/shikanime/realm",
+      package: package(),
+      source_url: "https://github.com/Shikanime/Realm",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
@@ -19,6 +20,18 @@ defmodule Realm.MixProject do
     """
     Work with type classes with algebraic or category-theoretic.
     """
+  end
+
+  defp package do
+    [
+      files: ["lib", "mix.exs", "README.md", "LICENSE", ".formatter.exs"],
+      maintainers: ["Shikanime Deva"],
+      licenses: ["MIT"],
+      links: %{
+        Documentation: "https://hexdocs.pm/realm",
+        GitHub: "https://github.com/Shikanime/Realm"
+      }
+    ]
   end
 
   defp docs do
