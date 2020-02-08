@@ -24,6 +24,7 @@ defprotocol Realm.Semigroup do
       iex> "foo" |> append(" ") |> append("bar")
       "foo bar"
   """
+  @spec append(t(), t()) :: any()
   def append(a, b)
 end
 
