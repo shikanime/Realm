@@ -3,6 +3,35 @@ import Realm.Arrow.Algebra
 import Realm.Apply.Algebra
 
 defmodule Realm do
+  @moduledoc """
+  A set of functions to mimic the standard Haskell libraries feature a number of
+  type classes with algebraic or category-theoretic underpinnings.
+  The functions in this module come in two flavors: named or
+  operators. For example:
+      iex> use Realm
+      iex> append(1, 1) # named
+      2
+      iex> 1 <> 1 # operator
+      2
+  If you prefer to use only operators or skip them, you can
+  pass the following options:
+    * `:only_operators` - includes only operators
+    * `:skip_operators` - skips operators
+  For example:
+      iex> use Realm, only_operators: true
+      iex> 1 <> 1
+      2
+  When invoked with no options, `use Realm` is equivalent
+  to `import Realm`.
+  All bitwise functions can be used in guards:
+      iex> appendable? = fn
+      ...>   semigroup when Realm.append(semigroup, 1) == 2 -> true
+      ...>   _ -> false
+      ...> end
+      iex> appendable?.(1)
+      true
+  """
+
   alias Realm.{Semigroupoid, Semigroup, Arrow, Apply, Ord, Setoid, Functor}
   import Quark.Curry
 
