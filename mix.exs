@@ -6,12 +6,19 @@ defmodule Realm.MixProject do
       app: :realm,
       version: "0.1.0",
       name: "Realm",
+      description: description(),
       source_url: "https://github.com/shikanime/realm",
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: docs()
     ]
+  end
+
+  defp description do
+    """
+    Work with type classes with algebraic or category-theoretic.
+    """
   end
 
   defp docs do
