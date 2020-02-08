@@ -28,7 +28,7 @@ defprotocol Realm.Ord do
       iex> Realm.Ord.compare([3, 2, 1], [1, 2, 3, 4, 5])
       :greater
   """
-  @spec compare(Ord.t(), Ord.t()) :: Ord.ordering()
+  @spec compare(t(), t()) :: ordering()
   def compare(left, right)
 end
 

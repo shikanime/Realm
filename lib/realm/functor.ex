@@ -25,7 +25,7 @@ defprotocol Realm.Functor do
       ...> end)
       %{a: 200, b: "[1, 2, 3]"}
   """
-  @spec map(Functor.t(), (any() -> any())) :: Functor.t()
+  @spec map(t(), (any() -> any())) :: t()
   def map(wrapped, fun)
 end
 

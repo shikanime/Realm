@@ -17,6 +17,7 @@ defprotocol Realm.Monoid do
       iex> Realm.Monoid.empty [1, 2, 3, 4, 5]
       []
   """
+  @spec empty(t()) :: t()
   def empty(monoid)
 end
 

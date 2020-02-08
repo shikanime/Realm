@@ -28,7 +28,7 @@ defprotocol Realm.Setoid do
       chosen_one?(old_harry)
       #=> true
   """
-  @spec equivalent?(Setoid.t(), Setoid.t()) :: boolean()
+  @spec equivalent?(t(), t()) :: boolean()
   def equivalent?(a, b)
 end
 

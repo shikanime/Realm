@@ -40,7 +40,7 @@ defprotocol Realm.Arrow do
       ...> 5 |> Realm.pipe(times_ten)
       50
   """
-  @spec arrowize(Arrow.t(), fun()) :: Arrow.t()
+  @spec arrowize(t(), fun()) :: t()
   def arrowize(sample, fun)
 end
 

@@ -20,7 +20,7 @@ defprotocol Realm.Category do
       ...> classic_id.(42)
       42
   """
-  @spec identity(Category.t()) :: Category.t()
+  @spec identity(t()) :: t()
   def identity(category)
 end
 

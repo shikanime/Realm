@@ -96,7 +96,7 @@ defprotocol Realm.Apply do
       ...> |> Apply.convey([fn x -> x + 1 end, fn y -> y * 10 end])
       [2, 10, 3, 20, 4, 30]
   """
-  @spec convey(Apply.t(), Apply.t()) :: Apply.t()
+  @spec convey(t(), t()) :: t()
   def convey(apply, func)
 end
 
