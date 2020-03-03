@@ -4,7 +4,7 @@ defmodule Realm.MixProject do
   def project do
     [
       app: :realm,
-      version: "0.1.0",
+      version: "0.1.1",
       name: "Realm",
       description: description(),
       package: package(),
@@ -36,7 +36,7 @@ defmodule Realm.MixProject do
 
   defp docs do
     [
-      main: "Realm",
+      main: "readme",
       extras: ["README.md"]
     ]
   end
